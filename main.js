@@ -757,7 +757,7 @@ function checkForUpdates() {
       logInfo('UPDATE', '切换更新源到: ' + source + ' (' + mirrorUrl + ')');
       autoUpdater.setFeedURL({
         provider: 'generic',
-        url: mirrorUrl + 'https://github.com/baogan/calendar-list/releases/latest'
+        url: mirrorUrl + 'https://github.com/wsccddyk/todo-list/releases/latest'
       });
     } else {
       logInfo('UPDATE', '使用 GitHub 官方源');
