@@ -1,0 +1,70 @@
+{
+  "name": "calendar-list",
+  "version": "9.6.0",
+  "description": "桌面日历与任务管理工具",
+  "author": "CalendarApp",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win --x64"
+  },
+  "devDependencies": {
+    "electron": "33.4.0",
+    "electron-builder": "25.1.8",
+    "electron-updater": "^6.8.3"
+  },
+  "build": {
+    "appId": "com.calendar.calendarlist",
+    "productName": "任务清单",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "app.js",
+      "style.css",
+      "icon.ico",
+      "ds.png",
+      "xlsx.full.min.js",
+      "sql-wasm.js",
+      "sql-wasm.wasm",
+      "package.json"
+    ],
+    "extraMetadata": {
+      "main": "main.js"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "icon.ico",
+      "sign": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "icon.ico",
+      "uninstallerIcon": "icon.ico",
+      "artifactName": "${productName}-Setup-${version}.${ext}",
+      "deleteAppDataOnUninstall": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "wsccddyk",
+      "repo": "calendar-list"
+    },
+    "asar": false
+  },
+  "dependencies": {
+    "sql.js": "^1.14.1"
+  }
+}
