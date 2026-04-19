@@ -6,7 +6,14 @@
 [![Platform](https://img.shields.io/badge/platform-Windows-blue)](https://github.com/wsccddyk/todo-list/releases)
 [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 
-![TodoList Screenshot](docs/screenshot.png)
+## 🖼️ Screenshots
+
+<table>
+<tr>
+<td><img src="docs/screenshot-main.png" alt="Main Interface" width="100%"/><br/><b>📅 Main View</b> — Calendar + Task Management + Lunar Dates</td>
+<td><img src="docs/screenshot-settings.png" alt="Settings Panel" width="100%"/><br/><b>⚙️ Settings</b> — Theme / Appearance / Display Options</td>
+</tr>
+</table>
 
 ---
 
