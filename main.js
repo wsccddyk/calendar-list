@@ -644,6 +644,46 @@ function createWindow() {
     }
   });
 
+  // 语言切换时同步更新应用名称和注册表
+  ipcMain.handle('update-app-language', async (event, lang) => {
+    try {
+      var newName = (lang === 'en-US') ? 'TodoList' : '任务清单';
+      var oldName = app.name || '';
+
+      // 更新应用名称
+      app.name = newName;
+      logInfo('APP', '语言切换，应用名称: ' + oldName + ' → ' + newName);
+
+      // 如果自启已开启，需要用新名称重新写入注册表
+      var loginSettings = app.getLoginItemSettings();
+      if (loginSettings.openAtLogin) {
+        var exePath = process.execPath;
+        // 用新名称写入
+        app.setLoginItemSettings({
+          openAtLogin: true,
+          name: newName,
+          path: exePath,
+          args: []
+        });
+        // 清除旧名称的注册表条目（如果名称变了）
+        if (oldName && oldName !== newName) {
+          try {
+            execSync(
+              'reg delete "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run" /v "' + oldName.replace(/"/g, '') + '" /f',
+              { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }
+            );
+          } catch(ignored) {}
+        }
+        logInfo('AUTO_START', '自启注册表已更新为: ' + newName);
+      }
+
+      return { success: true, name: newName };
+    } catch(e) {
+      logError('APP', '更新应用语言失败: ' + e.message);
+      return { success: false, error: e.message };
+    }
+  });
+
   // 渲染进程数据更新时同步到文件
   ipcMain.on('sync-tasks-from-renderer', (event, tasks) => {
     tasksData = tasks || {};
@@ -670,8 +710,11 @@ function createWindow() {
 
 // 应用启动
 app.whenReady().then(() => {
-  // 设置应用名称（用于注册表自启条目名等系统级功能）
-  app.name = '任务清单';
+  // 设置应用名称（用于注册表自启条目名、窗口标题等系统级功能）
+  // 根据用户语言设置选择名称：中文=任务清单，英文=TodoList
+  var userLang = (settingsData && settingsData.language) || 'zh-CN';
+  app.name = (userLang === 'en-US') ? 'TodoList' : '任务清单';
+  logInfo('APP', '应用名称设置为: ' + app.name + ' (语言: ' + userLang + ')');
 
   // 清理旧的错误自启条目（历史遗留：键名为 "electron.app.Electron" 而非 "任务清单"）
   try {

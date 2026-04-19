@@ -44,6 +44,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // 开机自启动
   setAutoStart: (enabled) => ipcRenderer.invoke('set-auto-start', enabled),
 
+  // 语言切换（同步更新主进程应用名称和自启注册表）
+  updateAppLanguage: (lang) => ipcRenderer.invoke('update-app-language', lang),
+
   // 自动更新
   updaterCheck: () => ipcRenderer.invoke('updater-check'),
   updaterDownload: () => ipcRenderer.invoke('updater-download'),

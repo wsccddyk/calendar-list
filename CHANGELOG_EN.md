@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [9.9.5] - 2026-04-19
+
+### Bug Fixes
+
+- **Version Compare Dialog Logic Fix** — When server version is newer than local version, correctly shows "🆕 New Version Available" with update button instead of incorrectly showing "Already Up to Date"
+- **App Name Localization** — App name automatically switches based on language: "任务清单" for Chinese, "TodoList" for English; registry startup entry updates on language change
+
+### Improvements
+
+- Added `compareVersions()` function for semantic version comparison
+- Language switching now syncs app name and startup registry entry to main process
+
+---
+
 ## [9.9.4] - 2026-04-19
 
 ### Bug Fixes
