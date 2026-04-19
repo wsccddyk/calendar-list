@@ -10,8 +10,8 @@
 
 <table>
 <tr>
-<td><img src="docs/screenshot-main.png" alt="主界面 - 日历视图" width="100%"/><br/><b>📅 主界面</b> — 月视图日历 + 任务管理 + 农历显示</td>
-<td><img src="docs/screenshot-settings.png" alt="设置面板" width="100%"/><br/><b>⚙️ 设置面板</b> — 主题 / 外观 / 显示选项全面可调</td>
+<td><img src="docs/preview-calendar.png" alt="主界面 - 日历视图" width="100%"/><br/><b>📅 主界面</b> — 月视图日历 + 任务管理 + 农历显示</td>
+<td><img src="docs/preview-settings.png" alt="设置面板" width="100%"/><br/><b>⚙️ 设置面板</b> — 主题 / 外观 / 显示选项全面可调</td>
 </tr>
 </table>
 

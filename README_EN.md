@@ -10,8 +10,8 @@
 
 <table>
 <tr>
-<td><img src="docs/screenshot-main.png" alt="Main Interface" width="100%"/><br/><b>📅 Main View</b> — Calendar + Task Management + Lunar Dates</td>
-<td><img src="docs/screenshot-settings.png" alt="Settings Panel" width="100%"/><br/><b>⚙️ Settings</b> — Theme / Appearance / Display Options</td>
+<td><img src="docs/preview-calendar.png" alt="Main Interface" width="100%"/><br/><b>📅 Main View</b> — Calendar + Task Management + Lunar Dates</td>
+<td><img src="docs/preview-settings.png" alt="Settings Panel" width="100%"/><br/><b>⚙️ Settings</b> — Theme / Appearance / Display Options</td>
 </tr>
 </table>
 
