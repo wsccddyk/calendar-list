@@ -6,6 +6,10 @@
 [![Platform](https://img.shields.io/badge/platform-Windows-blue)](https://github.com/wsccddyk/todo-list/releases)
 [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 
+## 📋 Changelog
+
+View version history → [CHANGELOG.md](./CHANGELOG.md) | [Changelog (EN)](./CHANGELOG_EN.md)
+
 ## 🖼️ Screenshots
 
 <table>
