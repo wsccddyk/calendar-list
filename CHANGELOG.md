@@ -7,6 +7,22 @@
 
 ---
 
+## [9.9.9] - 2026-04-20
+
+### 🐛 Bug 修复
+
+- **启动速度恢复秒开** — 旧自启条目清理（注册表 `reg query/delete`）从同步阻塞改为 `setImmediate` 异步执行，不再阻塞主线程和窗口创建
+- **首次检查更新不再秒返回** — 修复竞态条件：启动自动检查（3s后）的残留事件（`update-not-available`/`error`）被错误当作手动检查结果弹出。手动检查期间屏蔽 `handleUpdateEvent` 终态事件，由 IPC 回调自行处理
+- **GitHub 更新源无代理时立即提示** — 国内直连 GitHub（ping 通但 HTTPS 被干扰），之前会等 15-20 秒超时才报错。现在检测到 GitHub + 无代理时直接返回明确提示建议切换 Gitee 或开启代理
+- **连通性预检匹配所选源** — 预检 URL 现在根据当前选中的更新源（Gitee/GitHub）动态选择，而非固定检测 Gitee
+- **缩短总超时时间** — 预检 5s + electron-updater 检查 12s = 最长约 17s（原 5s+20~30s）
+
+### ⚙️ 改进
+
+- 新增 `_currentUpdateSource` 变量跟踪当前选中源，新增 `_manualCheckStartTime` 辅助调试
+
+---
+
 ## [9.9.8] - 2026-04-20
 
 ### 🐛 Bug 修复

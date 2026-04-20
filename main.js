@@ -716,27 +716,30 @@ app.whenReady().then(() => {
   app.name = (userLang === 'en-US') ? 'TodoList' : '任务清单';
   logInfo('APP', '应用名称设置为: ' + app.name + ' (语言: ' + userLang + ')');
 
-  // 清理旧的错误自启条目（历史遗留：键名为 "electron.app.Electron" 而非 "任务清单"）
-  try {
-    var { execSync } = require('child_process');
-    var oldEntry = execSync(
-      'reg query "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run" /v "electron.app.Electron"',
-      { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }
-    );
-    // 如果旧条目存在且指向当前 exe 或不存在的路径，删除它
-    logInfo('AUTO_START', '发现旧自启条目 "electron.app.Electron"，正在清理...');
+  // 【v9.9.9】异步清理旧的错误自启条目（不阻塞主线程/窗口创建）
+  // 历史遗留：键名为 "electron.app.Electron" 而非 "任务清单"
+  setImmediate(function() {
     try {
-      execSync(
-        'reg delete "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run" /v "electron.app.Electron" /f',
-        { encoding: 'utf8' }
+      var { execSync } = require('child_process');
+      var oldEntry = execSync(
+        'reg query "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run" /v "electron.app.Electron"',
+        { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }
       );
-      logInfo('AUTO_START', '旧自启条目已清理');
-    } catch(e2) {
-      logError('AUTO_START', '清理旧条目失败: ' + e2.message);
+      // 如果旧条目存在且指向当前 exe 或不存在的路径，删除它
+      logInfo('AUTO_START', '发现旧自启条目 "electron.app.Electron"，正在清理...');
+      try {
+        execSync(
+          'reg delete "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run" /v "electron.app.Electron" /f',
+          { encoding: 'utf8' }
+        );
+        logInfo('AUTO_START', '旧自启条目已清理');
+      } catch(e2) {
+        logError('AUTO_START', '清理旧条目失败: ' + e2.message);
+      }
+    } catch(e) {
+      // 旧条目不存在或无法读取 → 无需处理
     }
-  } catch(e) {
-    // 旧条目不存在或无法读取 → 无需处理
-  }
+  });
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -1437,14 +1440,35 @@ function checkForUpdates() {
 
   // IPC handlers
 
+  // 当前选中的更新源（由 set-updater-source 设置，供 updater-check 读取）
+  var _currentUpdateSource = 'gitee';
+
   /** 
    * 更新检查 —— 重写为两阶段：
-   * 阶段1：先做连通性测试（5秒内出结果），失败立即返回错误给渲染进程弹窗
+   * 阶段1：根据所选源做连通性预检（5秒内出结果），失败立即返回错误给渲染进程弹窗
    * 阶段2：连通性OK后再调 electron-updater 检查更新版本
    */
   ipcMain.handle('updater-check', async () => {
-    // ===== 阶段1：连通性预检（Gitee）=====
-    logInfo('UPDATE', '开始连通性预检... (Gitee)');
+    // ===== 阶段0：源选择感知 =====
+    // 如果是 GitHub 且无代理 → 直接提示需要代理（国内直连必然超时/被墙）
+    if (_currentUpdateSource === 'github') {
+      var proxyUrl = getProxyUrl();
+      if (!proxyUrl) {
+        logInfo('UPDATE', 'GitHub源无代理，直接返回提示');
+        return { 
+          error: true, 
+          message: '⚠️ 使用 GitHub 更新源需要代理。\n\n检测到当前网络环境未配置代理（直连模式）。\n\nGitHub 在中国大陆访问不稳定，请：\n• 切换到「Gitee」更新源（推荐，国内直连秒开）\n• 或开启 VPN/代理后重试\n\n提示：ping 通 TCP 不代表 HTTPS 能完成完整请求'
+        };
+      }
+      logInfo('UPDATE', 'GitHub源 + 有代理(' + proxyUrl + ')，继续检查...');
+    }
+
+    // ===== 阶段1：连通性预检（匹配所选源）=====
+    var precheckUrl = (_currentUpdateSource === 'github')
+      ? 'https://api.github.com/repos/yansusu999/todo-list/releases/latest'
+      : 'https://gitee.com/api/v5/repos/yansusu999/todo-list/releases/latest';
+    
+    logInfo('UPDATE', '开始连通性预检... (' + _currentUpdateSource + ')');
     var netOk = await new Promise(function(resolve) {
       var https = require('https');
       var settled = false;
@@ -1457,13 +1481,12 @@ function checkForUpdates() {
       }, 5000);
 
       try {
-        // 检测 Gitee 是否可达
-        var req = https.get('https://gitee.com/api/v5/repos/yansusu999/todo-list/releases/latest', {
+        var req = https.get(precheckUrl, {
           headers: { 'User-Agent': 'TodoList-Updater/1.0' },
-          timeout: 7000
+          timeout: 5000  // 缩短预检超时
         }, function(res) {
           clearTimeout(timer);
-          if (!settled) { settled = true; resolve(true); }
+          if (!settled) { settled = true; resolve(res.statusCode < 500); }
           req.abort();
         });
         req.on('error', function(e) {
@@ -1482,15 +1505,17 @@ function checkForUpdates() {
     });
 
     if (!netOk) {
-      logError('UPDATE', '连通性预检失败：Gitee不可达');
-      return { error: true, message: '无法连接到更新服务器。\n\n当前网络无法访问 Gitee。\n\n请检查网络连接后重试。' };
+      var srcName = _currentUpdateSource === 'github' ? 'GitHub' : 'Gitee';
+      logError('UPDATE', '连通性预检失败：' + srcName + '不可达');
+      return { error: true, message: '无法连接到更新服务器。\n\n当前网络无法访问 ' + srcName + '。' + 
+        (_currentUpdateSource === 'github' ? '\n\n建议切换到「Gitee」更新源（国内直连）。' : '\n\n请检查网络连接后重试。') };
     }
 
     logInfo('UPDATE', '连通性预检通过，开始检查更新版本...');
 
-    // ===== 阶段2：正式检查更新 =====
+    // ===== 阶段2：正式检查更新（缩短超时至12秒）=====
     try {
-      var result = await checkWithTimeout(15000);
+      var result = await checkWithTimeout(12000);
       logInfo('UPDATE', '检查结果:', JSON.stringify(result));
       
       // 返回统一格式的结果给渲染进程处理弹窗
@@ -1513,7 +1538,7 @@ function checkForUpdates() {
       // 超时或其他异常 — 统一翻译
       var errMsg = (e && e.message) ? String(e.message) : '';
       if (errMsg === 'TIMEOUT') {
-        errMsg = '⏱ 更新检查超时（等待超过 15 秒无响应）。\n\n可能原因：\n• 服务器响应时间过长\n• 网络不稳定\n\n建议：稍后再试';
+        errMsg = '⏱ 更新检查超时（等待超过 12 秒无响应）。\n\n可能原因：\n• 服务器响应时间过长\n• 网络不稳定\n• 当前更新源在国内访问慢\n\n建议：切换到 Gitee 更新源（国内直连更快），或稍后再试';
       } else {
         // 403/404 不再当作"没有找到更新"，而是作为网络错误提示
         if (/403|forbidden/i.test(errMsg)) {
@@ -1546,6 +1571,7 @@ function checkForUpdates() {
   });
 
   ipcMain.handle('set-updater-source', async (event, source) => {
+    _currentUpdateSource = source || 'gitee'; // 记录当前源，供 updater-check 使用
     await detectAndApplyProxy(false);
     configureFeed(source);
     return { success: true, source: source };
