@@ -55,6 +55,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // 获取应用版本
   getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+  getVersionSync: () => ipcRenderer.sendSync('get-app-version-sync'),
   onUpdateStatus: (callback) => {
     ipcRenderer.on('update-status', (event, data) => callback(data));
   },

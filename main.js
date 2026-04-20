@@ -1540,6 +1540,11 @@ function checkForUpdates() {
     return { version: app.getVersion() };
   });
 
+  // 同步获取版本号（渲染进程启动时立即需要，不能等异步）
+  ipcMain.on('get-app-version-sync', (event) => {
+    event.returnValue = app.getVersion();
+  });
+
   ipcMain.handle('set-updater-source', async (event, source) => {
     await detectAndApplyProxy(false);
     configureFeed(source);

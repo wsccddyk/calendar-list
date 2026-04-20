@@ -7,6 +7,16 @@
 
 ---
 
+## [9.9.7] - 2026-04-20
+
+### 🐛 Bug 修复
+
+- **版本号显示 "unknown" 修复** — 上次修复移除硬编码后，异步 IPC 时序问题导致 fallback 变成 "unknown"
+- **新增同步版本获取** — 添加 `getVersionSync()` + `get-app-version-sync` IPC，在 `init()` 启动时**立即**同步获取版本号，不再依赖异步时序
+- **版本获取优先级**：sync IPC → 异步 IPC → 缓存值 → null（不会显示 unknown）
+
+---
+
 ## [9.9.6] - 2026-04-19
 
 ### 🐛 Bug 修复

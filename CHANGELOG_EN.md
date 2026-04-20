@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [9.9.7] - 2026-04-20
+
+### Bug Fixes
+
+- **"unknown" Version Display Fix** — Previous fix removed hardcoded version but async IPC timing caused fallback to show "unknown"
+- **Added Sync Version Retrieval** — New `getVersionSync()` + `get-app-version-sync` IPC for immediate synchronous version read at `init()` startup
+- **Version fetch priority**: sync IPC → async IPC → cached value → never shows "unknown"
+
+---
+
 ## [9.9.6] - 2026-04-19
 
 ### Bug Fixes
