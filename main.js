@@ -716,28 +716,30 @@ app.whenReady().then(() => {
   app.name = (userLang === 'en-US') ? 'TodoList' : '任务清单';
   logInfo('APP', '应用名称设置为: ' + app.name + ' (语言: ' + userLang + ')');
 
-  // 【v9.9.9】异步清理旧的错误自启条目（不阻塞主线程/窗口创建）
+  // 【v9.9.10】完全异步清理旧的错误自启条目（零阻塞主线程）
   // 历史遗留：键名为 "electron.app.Electron" 而非 "任务清单"
+  // 注意：必须用 exec/execFile 异步方法，不能用 execSync（即使放 setImmediate 里也会阻塞事件循环）
   setImmediate(function() {
     try {
-      var { execSync } = require('child_process');
-      var oldEntry = execSync(
+      var { exec } = require('child_process');
+      exec(
         'reg query "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run" /v "electron.app.Electron"',
-        { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }
+        { encoding: 'utf8', timeout: 5000 },
+        function(err, stdout, stderr) {
+          if (err || !stdout) return; // 不存在或超时 → 无需处理
+          logInfo('AUTO_START', '发现旧自启条目 "electron.app.Electron"，正在清理...');
+          exec(
+            'reg delete "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run" /v "electron.app.Electron" /f',
+            { encoding: 'utf8', timeout: 5000 },
+            function(e2) {
+              if (e2) logError('AUTO_START', '清理旧条目失败: ' + e2.message);
+              else logInfo('AUTO_START', '旧自启条目已清理');
+            }
+          );
+        }
       );
-      // 如果旧条目存在且指向当前 exe 或不存在的路径，删除它
-      logInfo('AUTO_START', '发现旧自启条目 "electron.app.Electron"，正在清理...');
-      try {
-        execSync(
-          'reg delete "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run" /v "electron.app.Electron" /f',
-          { encoding: 'utf8' }
-        );
-        logInfo('AUTO_START', '旧自启条目已清理');
-      } catch(e2) {
-        logError('AUTO_START', '清理旧条目失败: ' + e2.message);
-      }
     } catch(e) {
-      // 旧条目不存在或无法读取 → 无需处理
+      // exec 调用异常（理论上不会发生）
     }
   });
 
