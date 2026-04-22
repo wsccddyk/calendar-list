@@ -8,7 +8,7 @@
 
 ## 📋 更新日志
 
-查看各版本更新内容 → [CHANGELOG.md](./CHANGELOG.md) | [Changelog (EN)](./CHANGELOG_EN.md)
+查看各版本更新内容 → [CHANGELOG.md](./CHANGELOG.md)
 
 ## 🖼️ 界面预览
 
@@ -251,6 +251,6 @@ npm run build
 
 <div align="center">
 
-## [English](README_EN.md) | 中文
+Made with ❤️ by <a href="https://github.com/wsccddyk">爆肝</a>
 
 </div>
