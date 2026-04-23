@@ -33,7 +33,7 @@
     return _cachedTodayKey;
   }
 
-  /** 刷新今日缓存 */
+  /** 刷新今日缓存（仅更新缓存变量，不触发渲染） */
   function _refreshTodayCache() {
     var now = new Date();
     if (_timezoneOffset !== 0) {
@@ -44,23 +44,26 @@
     var key = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
     // 仅当日期变更时更新（避免每秒重渲染）
     if (key === _cachedTodayKey && _cachedTodayDate) return;
+    var oldKey = _cachedTodayKey;
     _cachedTodayDate = now;
     _cachedTodayKey = key;
-    // 跨午夜了，切到当月并重新渲染
-    var newYear = now.getFullYear(), newMonth = now.getMonth();
-    if (currentYear !== newYear || currentMonth !== newMonth) {
-      currentYear = newYear;
-      currentMonth = newMonth;
-      renderCalendar();
-    } else {
-      renderGrid(); // 同月内只需重绘格子（更新今日框位置）
+    // 如果不是首次初始化，才触发渲染
+    if (oldKey !== '' && typeof renderGrid === 'function') {
+      var newYear = now.getFullYear(), newMonth = now.getMonth();
+      if (currentYear !== newYear || currentMonth !== newMonth) {
+        currentYear = newYear;
+        currentMonth = newMonth;
+        if (typeof renderCalendar === 'function') renderCalendar();
+      } else {
+        renderGrid(); // 同月内只需重绘格子（更新今日框位置）
+      }
     }
   }
 
   // 每30秒检查一次日期变更
   setInterval(_refreshTodayCache, 30000);
 
-  // 初始化一次
+  // 初始化一次（仅设置缓存，不渲染——渲染由后续init流程完成）
   _refreshTodayCache();
   const today = getToday(); // 向后兼容：旧代码仍可读取
   let currentYear = today.getFullYear();
