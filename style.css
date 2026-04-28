@@ -287,6 +287,13 @@ body.desktop-mode-active .day-cell:hover {
   line-height: 1;
 }
 
+.month-label-badge {
+  font-size: var(--font-size-date);
+  color: var(--accent-color, #58a6ff);
+  margin-left: 2px;
+  font-weight: 600;
+}
+
 .holiday-dot {
   width: 5px;
   height: 5px;
