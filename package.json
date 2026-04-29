@@ -1,6 +1,6 @@
 {
   "name": "calendar-list",
-  "version": "9.9.7",
+  "version": "9.9.8",
   "description": "桌面日历与任务管理工具",
   "author": "CalendarApp",
   "main": "main.js",
@@ -40,6 +40,18 @@
       "!**/node_modules/.bin",
       "node_modules/sql.js/**/*",
       "node_modules/electron-updater/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "mcp-server",
+        "to": "mcp-server",
+        "filter": [
+          "**/*",
+          "!**/README.md",
+          "!**/CHANGELOG.md",
+          "!**/.github"
+        ]
+      }
     ],
     "win": {
       "target": [
