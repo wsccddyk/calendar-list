@@ -253,6 +253,31 @@
       animation: fadeInUp 0.6s ease 0.3s both;
     }
 
+    .hero-version {
+      margin-top: 16px;
+      font-size: 13px;
+      color: var(--text-muted);
+      animation: fadeInUp 0.6s ease 0.35s both;
+    }
+
+    .hero-version .hv-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      background: rgba(245, 158, 11, 0.08);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      border-radius: 6px;
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .hero-version .hv-dot {
+      width: 5px; height: 5px;
+      background: var(--accent);
+      border-radius: 50%;
+    }
+
     .btn-primary {
       display: inline-flex;
       align-items: center;
@@ -1069,6 +1094,12 @@
               ⭐ GitHub
             </a>
           </div>
+          <div class="hero-version">
+            <span class="hv-tag">
+              <span class="hv-dot"></span>
+              <span id="hero-version-label">加载中...</span>
+            </span>
+          </div>
         </div>
         <div class="hero-visual">
           <img src="preview-calendar.png" alt="任务清单主界面" class="hero-screenshot" />
@@ -1370,11 +1401,18 @@
     const GITHUB_REPO = 'wsccddyk/todo-list';
     let releasesCache = null;
 
+    function parseSemver(tag) {
+      const m = tag.replace(/^v/, '').split('.').map(Number);
+      return m[0] * 10000 + (m[1] || 0) * 100 + (m[2] || 0);
+    }
+
     async function fetchReleases() {
       if (releasesCache) return releasesCache;
       try {
         const resp = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases`);
-        const data = await resp.json();
+        let data = await resp.json();
+        // Sort by semantic version descending (in case GitHub API returns wrong order)
+        data.sort((a, b) => parseSemver(b.tag_name) - parseSemver(a.tag_name));
         releasesCache = data;
         return data;
       } catch (e) {
@@ -1393,14 +1431,21 @@
       return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     }
 
-    // Update version tag on page
+    // Update version tags on page
     async function updateVersionTag() {
       const releases = await fetchReleases();
       if (releases.length > 0) {
         const latest = releases[0];
-        const label = document.getElementById('download-version-label');
-        if (label) {
-          label.textContent = `最新版本 ${latest.tag_name} · ${formatDate(latest.published_at)}`;
+        const verText = `${latest.tag_name} · ${formatDate(latest.published_at)}`;
+        // Download section version label
+        const dlLabel = document.getElementById('download-version-label');
+        if (dlLabel) {
+          dlLabel.textContent = `最新版本 ${verText}`;
+        }
+        // Hero section version label
+        const heroLabel = document.getElementById('hero-version-label');
+        if (heroLabel) {
+          heroLabel.textContent = `最新版 ${verText}`;
         }
       }
     }
