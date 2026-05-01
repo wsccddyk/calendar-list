@@ -341,8 +341,8 @@ body.desktop-mode-active .day-cell:hover {
 }
 .task-item-cell .task-text {
   word-break: break-all;
-  overflow: hidden;
-  display: -webkit-box;
+  overflow: var(--task-text-overflow, hidden);
+  display: var(--task-text-display, -webkit-box);
   -webkit-line-clamp: var(--task-line-clamp, none);
   -webkit-box-orient: vertical;
 }

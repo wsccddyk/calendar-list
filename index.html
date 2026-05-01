@@ -271,10 +271,18 @@
               <label data-i18n="taskLines">任务显示行数</label>
               <select id="task-line-clamp-select">
                 <option value="0" selected data-i18n-opt="unlimited">无限制</option>
+                <option value="-1" data-i18n-opt="autoFit">自适应行数</option>
                 <option value="1" data-i18n-opt="lines1">1 行</option>
                 <option value="2" data-i18n-opt="lines2">2 行</option>
                 <option value="3" data-i18n-opt="lines3">3 行</option>
               </select>
+            </div>
+            <div class="settings-row">
+              <label data-i18n="autoFitFont">自适应字号</label>
+              <label class="toggle-switch">
+                <input type="checkbox" id="auto-fit-font-check" />
+                <span class="toggle-slider"></span>
+              </label>
             </div>
           </div>
 
@@ -520,7 +528,7 @@
         <div class="settings-panel" id="panel-about">
           <div class="about-header-area">
             <h2 class="about-app-name" data-i18n="appName">任务清单</h2>
-            <p class="about-version"><span id="about-version-label" data-i18n="localVersion">本地版本：</span><span id="about-version-value">v9.9.9</span> (<span id="about-version-date">2026-04-29</span>)</p>
+            <p class="about-version"><span id="about-version-label" data-i18n="localVersion">本地版本：</span><span id="about-version-value">v9.9.11</span> (<span id="about-version-date">2026-05-01</span>)</p>
             <p class="about-copyright" data-i18n="copyright">Copyright &copy; 2026 爆肝. All rights reserved.</p>
           </div>
 
